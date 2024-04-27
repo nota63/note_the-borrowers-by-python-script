@@ -1,0 +1,117 @@
+import sqlite3
+import random
+
+dates = [
+    "January 1, 2024",
+    "February 14, 2024",
+    "March 8, 2024",
+    "April 27, 2024",
+    "May 15, 2024",
+    "June 4, 2024",
+    "July 22, 2024",
+    "August 9, 2024",
+    "September 1, 2024",
+    "October 18, 2024"
+]
+
+due_dates = [
+    "November 5, 2024",
+    "December 12, 2024",
+    "January 3, 2025",
+    "February 19, 2025",
+    "March 9, 2025",
+    "April 2, 2025",
+    "May 21, 2025",
+    "June 14, 2025",
+    "July 6, 2025",
+    "August 28, 2025"
+]
+
+print("Welcome, borrowers!\nKeep storing, keep memorizing")
+
+def create_database():
+    conn = sqlite3.connect('data.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS borrower( 
+               id INTEGER PRIMARY KEY,
+               name TEXT NOT NULL,
+               date TEXT NOT NULL,
+               borrowed_amount TEXT NOT NULL,
+               due_date TEXT NOT NULL,
+               money_to_receive TEXT NOT NULL)
+    ''')
+    conn.commit()
+    conn.close()
+
+def insert_borrower(name, date, borrowed_amount, due_date, money_to_receive):
+    conn = sqlite3.connect('data.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO borrower (name, date, borrowed_amount, due_date, money_to_receive) VALUES (?, ?, ?, ?, ?)",
+              (name, date, borrowed_amount, due_date, money_to_receive))
+    print(f"The borrower '{name}' borrowed '{borrowed_amount}' on '{date}' with due date '{due_date}'. Money to receive: '{money_to_receive}'")
+    conn.commit()
+    conn.close()
+
+def view_borrower():
+    conn = sqlite3.connect('data.db')
+    c = conn.cursor()
+    c.execute("SELECT * FROM borrower")
+    borrowers = c.fetchall()
+    if borrowers:
+        for index, borrower in enumerate(borrowers, start=1):
+            print(f"Borrower {index}:")
+            print(f"Name: {borrower[1]}")
+            print(f"Date: {borrower[2]}")
+            print(f"Borrowed Amount: {borrower[3]}")
+            print(f"Due Date: {borrower[4]}")
+            print(f"Money to Receive: {borrower[5]}")
+            print("---------------------")
+    else:
+        print("No borrowers found in the database.")
+    conn.close()
+
+def remove_borrower(name):
+    conn = sqlite3.connect('data.db')
+    c = conn.cursor()
+    c.execute("DELETE FROM borrower WHERE name=?", (name,))
+    if c.rowcount > 0:
+        print(f"Borrower '{name}' removed successfully!")
+    else:
+        print(f"No borrower with the name '{name}' found.")
+    conn.commit()
+    conn.close()
+
+def main():
+    create_database()
+
+    while True:
+        print("Actions:")
+        print("1) Insert borrower")
+        print("2) View borrowers")
+        print("3) Remove borrower")
+        print("4) Exit")
+
+        try:
+            user_choice = int(input("Enter your choice: "))
+            if user_choice == 1:
+                name = input("Enter the borrower's name: ")
+                date = random.choice(dates)
+                borrowed_amount = input("Enter the amount borrowed: ")
+                due_date = random.choice(due_dates)
+                money_to_receive = input("Enter the money to receive: ")
+                insert_borrower(name, date, borrowed_amount, due_date, money_to_receive)
+            elif user_choice == 2:
+                view_borrower()
+            elif user_choice == 3:
+                name = input("Enter the name of the borrower to remove: ")
+                remove_borrower(name)
+            elif user_choice == 4:
+                print("Exiting...")
+                break
+            else:
+                print("Invalid choice! Please choose a number from the menu.")
+        except ValueError:
+            print("Error! Please enter a valid integer.")
+
+if __name__ == "__main__":
+    main()
